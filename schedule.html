@@ -177,16 +177,42 @@
         const openBtn = document.getElementById('openScheduleBtn');
         const closeBtn = document.getElementById('closeScheduleBtn');
 
+        // Check if we're in an iframe
+        const isInIframe = window.self !== window.top;
+
         // Open modal
         openBtn.addEventListener('click', function() {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent body scroll
+            if (isInIframe) {
+                // If in iframe, open in parent window as full screen
+                try {
+                    window.top.postMessage({
+                        action: 'openScheduleModal',
+                        scheduleUrl: window.location.href
+                    }, '*');
+                } catch (e) {
+                    // Fallback: open in new tab if cross-origin prevents access
+                    window.open(window.location.href + '?autoopen=true', '_blank');
+                }
+            } else {
+                // Normal modal behavior
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
         });
 
         // Close modal
         closeBtn.addEventListener('click', function() {
             modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // Restore body scroll
+            document.body.style.overflow = 'auto';
+            
+            // Notify parent if in iframe
+            if (isInIframe && window.top !== window.self) {
+                try {
+                    window.top.postMessage({ action: 'closeScheduleModal' }, '*');
+                } catch (e) {
+                    console.log('Could not notify parent window');
+                }
+            }
         });
 
         // Close modal when clicking outside content
@@ -194,6 +220,15 @@
             if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
+                
+                // Notify parent if in iframe
+                if (isInIframe && window.top !== window.self) {
+                    try {
+                        window.top.postMessage({ action: 'closeScheduleModal' }, '*');
+                    } catch (e) {
+                        console.log('Could not notify parent window');
+                    }
+                }
             }
         });
 
@@ -202,8 +237,24 @@
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 modal.classList.remove('active');
                 document.body.style.overflow = 'auto';
+                
+                // Notify parent if in iframe
+                if (isInIframe && window.top !== window.self) {
+                    try {
+                        window.top.postMessage({ action: 'closeScheduleModal' }, '*');
+                    } catch (e) {
+                        console.log('Could not notify parent window');
+                    }
+                }
             }
         });
+
+        // Auto-open if URL parameter is set
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autoopen') === 'true') {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
     </script>
 
     </body>
