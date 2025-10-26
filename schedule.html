@@ -550,12 +550,23 @@ table {
         box-shadow: 0 2px 8px rgba(79, 33, 132, 0.1);
         outline: none;
         opacity: 0.8;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .close-btn:focus {
+        outline: none;
     }
 
     .close-btn svg {
         width: clamp(18px, 2.5vw, 24px);
         height: clamp(18px, 2.5vw, 24px);
         transition: var(--transition-base);
+        pointer-events: none;
     }
 
     .close-btn:hover {
@@ -998,4 +1009,5 @@ table {
 </style>
 
 </html>
+
 
